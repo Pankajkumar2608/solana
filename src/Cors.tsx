@@ -8,7 +8,7 @@ const Cors: React.FC = () => {
     // Listen for messages from the parent window
     const messageListener = (event: MessageEvent) => {
       // Ensure the message comes from the trusted parent site
-      if (event.origin !== 'https://your-parent-site.com') {
+      if (event.origin !== 'https://dummt-1g6w.vercel.app/') {
         console.warn('Untrusted message origin:', event.origin);
         return;
       }
