@@ -1,39 +1,42 @@
-import { useEffect } from "react";
+import React, { useEffect } from 'react';
 
-const Cors: React.FC = () => {
+// Define the type for the solana object (you can refine this as per the Phantom wallet SDK)
+declare global {
+  interface Window {
+    solana: any; // You can replace `any` with a more specific type if using a Phantom SDK
+  }
+}
+
+const WalletConnectionComponent: React.FC = () => {
   useEffect(() => {
-    // Send a message to the parent window requesting wallet connection
-    window.parent.postMessage({ type: 'request_wallet_connection' }, '*');
-
-    // Listen for messages from the parent window
-    const messageListener = (event: MessageEvent) => {
+    const messageListener = async (event: MessageEvent) => {
       // Ensure the message comes from the trusted parent site
-      if (event.origin !== 'https://dummt-1g6w.vercel.app/') {
+      if (event.origin !== 'https://your-parent-site.com') {
         console.warn('Untrusted message origin:', event.origin);
         return;
       }
 
-      // Check if the wallet has been connected
-      if (event.data.type === 'wallet_connected') {
-        const publicKey = event.data.publicKey;
-        const connectionURL = event.data.connectionURL;
+      // Check if the parent site is requesting a wallet connection
+      if (event.data.type === 'request_wallet_connection') {
+        console.log('Parent site requested wallet connection');
 
-        console.log('Wallet connected with public key:', publicKey);
-        console.log('Connected URL:', connectionURL);
+        try {
+          // Simulate wallet connection process (replace with real wallet logic)
+          const response = await window.solana.connect();
+          const publicKey = response.publicKey.toString();
 
-        // Update your widget UI to reflect the wallet connection and URL
-        const walletStatus = document.getElementById('wallet-status');
-        const connectionUrlElement = document.getElementById('connection-url');
-        if (walletStatus && connectionUrlElement) {
-          walletStatus.innerText = `Wallet connected: ${publicKey}`;
-          connectionUrlElement.innerText = `Connected to: ${connectionURL}`;
+          // Send wallet connection info back to the parent site
+          window.parent.postMessage({ type: 'wallet_connected', publicKey }, '*');
+        } catch (err) {
+          console.error('Wallet connection failed:', err);
         }
       }
     };
 
+    // Add event listener for receiving messages
     window.addEventListener('message', messageListener);
 
-    // Cleanup listener on component unmount
+    // Cleanup event listener on component unmount
     return () => {
       window.removeEventListener('message', messageListener);
     };
@@ -41,11 +44,10 @@ const Cors: React.FC = () => {
 
   return (
     <div>
-      <h2>Wallet Connection Status</h2>
-      <div id="wallet-status">No wallet connected.</div>
-      <div id="connection-url">No URL connected.</div>
+      {/* Your UI components here */}
+      <h2>Wallet Connection Component</h2>
     </div>
   );
 };
 
-export default Cors;
+export default WalletConnectionComponent;
